@@ -1,6 +1,8 @@
+import inspect
+
 import matplotlib.pyplot as plt
-import networkx as nx
 from mpl_toolkits.axisartist.axislines import SubplotZero
+import networkx as nx
 
 
 def setCanvas():
@@ -9,7 +11,7 @@ def setCanvas():
     plt.rcParams['savefig.dpi'] = 80
 
 
-import inspect
+
 
 
 def filterDict(dictToFilter: dict, function):
@@ -55,7 +57,9 @@ def drawGraph(g, layoutG=None, **kwargs):
     headGraph = g.edge_subgraph(heads)
 
     defaultOpt = {
+        'node_size': 2000,
         'pos': nx.drawing.nx_agraph.graphviz_layout(layoutG, prog='dot')
+        # 'pos': nx.drawing.spring_layout(layoutG)
     }
     sharedOpt = {**defaultOpt, **kwargs}
 
@@ -64,14 +68,13 @@ def drawGraph(g, layoutG=None, **kwargs):
         'node_color': 'white',
         'node_shape': "o",
         # 'font_family': 'dejavu sans',
-        'node_size': 2000,
         # 'node_shape': "s",
     }
 
     arrowOpt = {
-        **sharedOpt, 'width': 2,
+        **sharedOpt,
+        'width': 2,
         'edge_color': '#AAAAAA',
-        'node_size': 2000,
         'arrowsize': 30
     }
 
@@ -97,12 +100,17 @@ def drawGraph(g, layoutG=None, **kwargs):
             ax.axis[s].set_visible(False)
 
         for s in ['bottom', 'left']:
-            ax.axis[s].set_axisline_style("->")
+            axis = ax.axis[s]
+            axis.set_axisline_style("->")
+            # axis.set_lim([1.1*y for y in axis.get_lim()])# TODO: how to do this?
 
         ax.patch.set_alpha(0)
 
-        nx.drawing.draw_networkx_nodes(g, **nodeOpt)
-        nx.drawing.draw_networkx_labels(g, **sharedOpt)
+        _nodeOpt = filterDict({**nodeOpt}, nx.drawing.draw_networkx_nodes)
+        nx.drawing.draw_networkx_nodes(g, **_nodeOpt)
+
+        _labelOpt = filterDict({**nodeOpt}, nx.drawing.draw_networkx_labels)
+        nx.drawing.draw_networkx_labels(g, **_labelOpt)
 
         drawEdgesAndLabels(arrowHeadOpt, headGraph)
         drawEdgesAndLabels(arrowTailOpt, tailGraph)
